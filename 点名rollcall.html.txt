@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>课堂点名系统</title>
+    <style>
+        body {
+            font-family: '微软雅黑', sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        #nameDisplay {
+            font-size: 3em;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #exportBtn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .status-btns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .status-btn {
+            padding: 15px;
+            font-size: 1.2em;
+        }
+        .present { background-color: #4CAF50; }
+        .late { background-color: #FFC107; }
+        .absent { background-color: #F44336; }
+        .leave { background-color: #9E9E9E; }
+        #nameList {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #nameList td, #nameList th {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #nameList tr:nth-child(even){background-color: #f2f2f2;}
+    </style>
+</head>
+<body>
+    <div id="nameDisplay">点击开始点名</div>
+    
+    <div class="controls">
+        <button id="startBtn" onclick="pickRandom()">开始点名</button>
+        <button id="exportBtn" onclick="exportData()">导出数据</button>
+    </div>
+
+    <div class="status-btns">
+        <button class="status-btn present" onclick="markStatus('已到')">已到 ✓</button>
+        <button class="status-btn late" onclick="markStatus('迟到')">迟到 ⌚</button>
+        <button class="status-btn absent" onclick="markStatus('缺席')">缺席 ✖</button>
+        <button class="status-btn leave" onclick="markStatus('请假')">请假 📝</button>
+    </div>
+
+    <table id="nameList">
+        <tr><th>姓名</th><th>状态</th></tr>
+    </table>
+
+    <script>
+        const students = [
+            "柏宪凯", "曾维航", "陈乐恺", "陈诺安", "翟鹏博", "冯子桐",
+            "焦佳睿", "李书明", "李想", "李星池", "林牧煦", "罗文皓",
+            "宁可泰", "王佐", "肖宗环", "熊恒浩", "杨宸康", "庾洋铭",
+            "郑梓灏", "郑梓泓", "朱腾跃", "庄广琛", "宗清晨", "陈允汐",
+            "陈子琦", "方榕", "胡可欣", "黄清源", "李伟沁", "李雅棋",
+            "梁若熙", "林可欣", "刘思婷", "卢芷潼", "罗梓熙", "汪梓彤",
+            "许诗程", "杨姗姗", "杨奕涵", "杨悦之", "冶凌雪", "张雅诗",
+            "张梓晨", "周可人", "杨嘉恩"
+        ];
+
+        let remaining = [...students];
+        let records = {};
+
+        function initializeTable() {
+            const table = document.getElementById('nameList');
+            students.forEach(name => {
+                const row = table.insertRow();
+                row.insertCell().textContent = name;
+                row.insertCell().textContent = '待点名';
+            });
+        }
+
+        function pickRandom() {
+            if (remaining.length === 0) {
+                alert("所有学生已完成点名！");
+                return;
+            }
+            const index = Math.floor(Math.random() * remaining.length);
+            const current = remaining[index];
+            document.getElementById('nameDisplay').textContent = current;
+            remaining.splice(index, 1);
+        }
+
+        function markStatus(status) {
+            const current = document.getElementById('nameDisplay').textContent;
+            if (students.includes(current)) {
+                records[current] = status;
+                updateTable(current, status);
+                pickRandom();
+            }
+        }
+
+        function updateTable(name, status) {
+            const rows = document.getElementById('nameList').rows;
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].cells[0].textContent === name) {
+                    rows[i].cells[1].textContent = status;
+                    break;
+                }
+            }
+        }
+
+        function exportData() {
+            const csvContent = "姓名,状态\n" + 
+                students.map(name => `${name},${records[name] || '未记录'}`).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '点名记录.csv';
+            a.click();
+        }
+
+        // 初始化
+        initializeTable();
+    </script>
+</body>
+</html>
